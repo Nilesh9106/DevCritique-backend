@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { isEmail } = require('validator');
 
 // Define the schema for the Projects
 const projectSchema = new mongoose.Schema({
@@ -27,8 +28,24 @@ const reviewSchema = new mongoose.Schema({
 // Define the schema for the Users
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true },
-    email: { type: String, unique: true },
-    password: { type: String },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        validate: {
+            validator: isEmail,
+            message: props => `${props.value} is not a valid email`
+        }
+    },
+    password: {
+        type: String,
+        required: [true, 'Password is required'],
+        validate: {
+            validator: function (value) {
+                return value.length >= 6
+            },
+            message: () => 'Password must be at least six characters long'
+        }
+    },
     points: { type: Number, default: 0 },
     socialMediaLinks: { type: Object },
 }, { timestamps: true });

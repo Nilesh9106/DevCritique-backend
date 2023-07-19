@@ -7,12 +7,17 @@ const comment = require('./routes/comment');
 const user = require('./routes/user');
 const review = require('./routes/review');
 const cheerio = require('cheerio');
-
+const bodyParser = require("body-parser");
+const router = require('./routes/auth');
 
 dotenv.config();
 const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(express.json());
+app.use('/api', router);
 app.use('/api', project);
 app.use('/api', comment);
 app.use('/api', user);
