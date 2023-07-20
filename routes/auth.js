@@ -1,6 +1,9 @@
 const express = require("express");
 const { User } = require("../models/model");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken");
+
+
 
 const router = express.Router();
 
@@ -58,7 +61,16 @@ router.post("/sign-in", async (req, res) => {
         }
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                return res.status(200).json({ status: true, message: "User Logged in Successfully", user });
+                const token = jwt.sign(
+                    {
+                        id: user._id,
+                        username: user.username,
+                        email: user.email,
+                    },
+                    "RANDOM-TOKEN",
+                    { expiresIn: "30d" }
+                );
+                return res.status(200).json({ status: true, message: "User Logged in Successfully", user, token });
             }
 
             console.log(err);
@@ -68,5 +80,7 @@ router.post("/sign-in", async (req, res) => {
         return res.status(401).send({ status: false, message: err.message });
     }
 });
+
+
 
 module.exports = router;
