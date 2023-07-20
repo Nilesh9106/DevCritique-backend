@@ -9,10 +9,7 @@ const projectSchema = new mongoose.Schema({
     technologies: [{ type: String }],
 }, { timestamps: true });
 
-const commentSchema = new mongoose.Schema({
-    comment: { type: String, required: true },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+
 
 // Define the schema for the Reviews
 const reviewSchema = new mongoose.Schema({
@@ -21,7 +18,7 @@ const reviewSchema = new mongoose.Schema({
     text: { type: String, required: true },
     rating: { type: Number, min: 1, max: 5, default: null },
     status: { type: String, enum: ['solved', 'pending', 'rejected'], default: 'pending' },
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+    comments: [Object],
 }, { timestamps: true });
 
 
@@ -56,12 +53,12 @@ const userSchema = new mongoose.Schema({
 const Project = mongoose.model('Project', projectSchema);
 const Review = mongoose.model('Review', reviewSchema);
 const User = mongoose.model('User', userSchema);
-const Comment = mongoose.model('Comment', commentSchema);
+// const Comment = mongoose.model('Comment', commentSchema);
 
 // Export the models
 module.exports = {
     Project,
     Review,
     User,
-    Comment
+    // Comment
 };

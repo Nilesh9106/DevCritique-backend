@@ -7,13 +7,18 @@ const router = express.Router();
 router.post("/sign-up", async (req, res) => {
     try {
         // Extract email and password from the req.body object
-        const { email, password } = req.body;
+        const { username, email, password } = req.body;
 
         // Check if the email is already in use
-        let userExists = await User.findOne({ email });
-
+        let userExists = await User.findOne({ email: email });
         if (userExists) {
-            res.status(401).json({ message: "Email is already in use." });
+            res.status(401).json({ status: false, message: "Email is already in use." });
+            return;
+        }
+
+        userExists = await User.findOne({ username: username });
+        if (userExists) {
+            res.status(401).json({ status: false, message: "Username is already in use." });
             return;
         }
 
@@ -26,17 +31,18 @@ router.post("/sign-up", async (req, res) => {
 
             // Create a new user
             let user = new User({
-                email,
+                username: username,
+                email: email,
                 password: hash,
             });
 
             // Save user to database
             user.save().then(() => {
-                res.json({ message: "User created successfully", user });
+                res.json({ status: true, message: "User created successfully", user });
             });
         });
     } catch (err) {
-        return res.status(401).send(err.message);
+        return res.status(401).send({ status: false, message: err.message });
     }
 });
 
@@ -46,23 +52,21 @@ router.post("/sign-in", async (req, res) => {
         const { email, password } = req.body;
 
         // Check if user exists in database
-        let user = await User.findOne({ email });
-
+        let user = await User.findOne({ $or: [{ email: email }, { username: email }] });
         if (!user) {
-            return res.status(401).json({ message: "Invalid Credentials" });
+            return res.status(401).json({ status: false, message: "Account not Found!!" });
         }
-
-        // Compare passwords
+        console.log(password, user.password);
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                return res.status(200).json({ message: "User Logged in Successfully" });
+                return res.status(200).json({ status: true, message: "User Logged in Successfully" });
             }
 
             console.log(err);
-            return res.status(401).json({ message: "Invalid Credentials" });
+            return res.status(401).json({ status: false, message: "Invalid Credentials" });
         });
     } catch (error) {
-        res.status(401).send(err.message);
+        return res.status(401).send({ status: false, message: err.message });
     }
 });
 

@@ -15,7 +15,7 @@ router.post('/reviews', async (req, res) => {
 // Read all reviews
 router.get('/reviews', async (req, res) => {
     try {
-        const reviews = await Review.find().populate('comments author');
+        const reviews = await Review.find().populate('author');
         res.json(reviews);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving reviews' });
@@ -25,7 +25,7 @@ router.get('/reviews', async (req, res) => {
 //read review by author
 router.get('/reviews/author/:id', async (req, res) => {
     try {
-        const reviews = await Review.find({ author: req.params.id });
+        const reviews = await Review.find({ author: req.params.id }).populate('author');
         res.json(reviews);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving reviews' });
@@ -36,7 +36,7 @@ router.get('/reviews/author/:id', async (req, res) => {
 // Read a specific review by ID
 router.get('/reviews/:id', async (req, res) => {
     try {
-        const review = await Review.findById(req.params.id);
+        const review = await Review.findById(req.params.id).populate('author');
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }

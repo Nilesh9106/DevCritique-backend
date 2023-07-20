@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { Review, Comment } = require('../models/model');
+const { Review } = require('../models/model');
 
 // Create a new comment
 router.post('/comments', async (req, res) => {
     try {
         const review = await Review.findById(req.body.review);
-        const comment = new Comment(req.body.comment);
-        await comment.save();
-        console.log(comment);
-        review.comments.push(comment._id);
+
+        review.comments.push(req.body.comment);
         await review.save();
         res.json(review);
     }

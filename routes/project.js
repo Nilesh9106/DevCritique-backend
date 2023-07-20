@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { Project, Review } = require('../models/model');
 
+
 // Create a new project
+
 router.post('/projects', async (req, res) => {
     try {
         const project = await Project.create(req.body);
@@ -16,6 +18,15 @@ router.post('/projects', async (req, res) => {
 router.get('/projects', async (req, res) => {
     try {
         const projects = await Project.find().populate('author');
+        res.json(projects);
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving projects' });
+    }
+});
+// Read all projects by author
+router.get('/projects/author/:id', async (req, res) => {
+    try {
+        const projects = await Project.find({ author: req.params.id }).populate('author');
         res.json(projects);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving projects' });
