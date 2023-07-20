@@ -56,10 +56,9 @@ router.post("/sign-in", async (req, res) => {
         if (!user) {
             return res.status(401).json({ status: false, message: "Account not Found!!" });
         }
-        console.log(password, user.password);
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                return res.status(200).json({ status: true, message: "User Logged in Successfully" });
+                return res.status(200).json({ status: true, message: "User Logged in Successfully", user });
             }
 
             console.log(err);
