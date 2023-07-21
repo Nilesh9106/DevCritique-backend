@@ -9,6 +9,7 @@ const review = require('./routes/review');
 const cheerio = require('cheerio');
 const bodyParser = require("body-parser");
 const router = require('./routes/auth');
+const upload = require('./routes/upload');
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api', project);
 app.use('/api', comment);
 app.use('/api', user);
 app.use('/api', review);
+app.use('/api', upload);
 
 
 app.get('/fetch-opengraph', async (req, res) => {
