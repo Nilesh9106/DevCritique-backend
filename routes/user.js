@@ -1,6 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { User } = require('../models/model');
+const { User, Project, Review } = require('../models/model');
+const cheerio = require('cheerio')
+const og = async (link) => {
+    const response = await fetch(link);
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    const ogDetails = {
+        title: $('meta[property="og:title"]').attr('content') || '',
+        image: $('meta[property="og:image"]').attr('content') || '',
+        description: $('meta[property="og:description"]').attr('content') || '',
+        url: $('meta[property="og:url"]').attr('content') || '',
+    };
+    return ogDetails;
+}
+
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -22,40 +37,53 @@ router.get('/users', async (req, res) => {
     }
 });
 
-// Read a specific user by ID
-router.get('/users/:id', async (req, res) => {
+// Read a specific user by username
+router.get('/users/:username', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findOne({ username: req.params.username });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user);
+        const projects = await Project.find({ author: user._id }).populate('author');
+        const reviews = await Review.find({ author: user._id }).populate('author');
+        for (let i = 0; i < projects.length; i++) {
+            const ogDetails = await og(projects[i].link);
+            projects[i].ogDetails = ogDetails;
+        }
+
+        res.json({ user, projects, reviews });
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving user' });
     }
 });
 
 // Update a user by ID
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:username', async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const user = await User.findOneAndUpdate({ username: req.params.username }, req.body, { new: true });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user);
+        const projects = await Project.find({ author: user._id }).populate('author');
+        const reviews = await Review.find({ author: user._id }).populate('author');
+        for (let i = 0; i < projects.length; i++) {
+            const ogDetails = await og(projects[i].link);
+            projects[i].ogDetails = ogDetails;
+        }
+        res.json({ user, projects, reviews });
     } catch (error) {
         res.status(500).json({ error: 'Error updating user' });
     }
 });
 
 // Delete a user by ID
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:username', async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        const user = await User.findOneAndDelete({ username: req.params.username });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json({ message: 'User deleted successfully' });
+        res.json({ status: true, message: 'User deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Error deleting user' });
     }

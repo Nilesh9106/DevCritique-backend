@@ -1,7 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { Project, Review } = require('../models/model');
+const cheerio = require('cheerio');
 
+const og = async (link) => {
+    const response = await fetch(link);
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    const ogDetails = {
+        title: $('meta[property="og:title"]').attr('content') || '',
+        image: $('meta[property="og:image"]').attr('content') || '',
+        description: $('meta[property="og:description"]').attr('content') || '',
+        url: $('meta[property="og:url"]').attr('content') || '',
+    };
+    return ogDetails;
+}
 
 // Create a new project
 
@@ -17,7 +31,13 @@ router.post('/projects', async (req, res) => {
 // Read all projects
 router.get('/projects', async (req, res) => {
     try {
-        const projects = await Project.find().populate('author');
+        let projects = await Project.find().populate('author');
+
+        for (let i = 0; i < projects.length; i++) {
+            const ogDetails = await og(projects[i].link);
+            projects[i].ogDetails = ogDetails;
+        }
+
         res.json(projects);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving projects' });
@@ -27,6 +47,10 @@ router.get('/projects', async (req, res) => {
 router.get('/projects/author/:id', async (req, res) => {
     try {
         const projects = await Project.find({ author: req.params.id }).populate('author');
+        for (let i = 0; i < projects.length; i++) {
+            const ogDetails = await og(projects[i].link);
+            projects[i].ogDetails = ogDetails;
+        }
         res.json(projects);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving projects' });
@@ -41,6 +65,9 @@ router.get('/projects/:id', async (req, res) => {
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
+        const ogDetails = await og(project.link);
+        project.ogDetails = ogDetails;
+
         const reviews = await Review.find({ project: req.params.id });
         res.json({ project, reviews });
     } catch (error) {
@@ -55,6 +82,8 @@ router.put('/projects/:id', async (req, res) => {
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
+        const ogDetails = await og(project.link);
+        project.ogDetails = ogDetails;
         res.json(project);
     } catch (error) {
         res.status(500).json({ error: 'Error updating project' });

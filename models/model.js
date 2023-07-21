@@ -7,6 +7,7 @@ const projectSchema = new mongoose.Schema({
     description: { type: String, required: true },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     technologies: [{ type: String }],
+    ogDetails: { type: Object }
 }, { timestamps: true });
 
 
