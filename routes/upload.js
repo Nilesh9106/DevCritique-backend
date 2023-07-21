@@ -37,7 +37,8 @@ upload.post("/file/upload",
             console.log(req.file);
             let { originalname, buffer, mimetype } = req.file;
             let { parent_id } = req.query;
-            let fileName = parent_id + "_" + originalname;
+            let random = Math.floor(Math.random() * 1000);
+            let fileName = parent_id + "_" + random + originalname;
             let blobName = `${fileName}`;
             let stream = Readable.from(buffer);
 

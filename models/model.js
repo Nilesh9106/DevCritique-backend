@@ -7,7 +7,8 @@ const projectSchema = new mongoose.Schema({
     description: { type: String, required: true },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     technologies: [{ type: String }],
-    ogDetails: { type: Object }
+    ogDetails: { type: Object },
+    images: [{ type: String }],
 }, { timestamps: true });
 
 
@@ -20,6 +21,7 @@ const reviewSchema = new mongoose.Schema({
     rating: { type: Number, min: 1, max: 5, default: null },
     status: { type: String, enum: ['solved', 'pending', 'rejected'], default: 'pending' },
     comments: [Object],
+    images: [{ type: String }],
 }, { timestamps: true });
 
 
@@ -46,6 +48,7 @@ const userSchema = new mongoose.Schema({
     },
     points: { type: Number, default: 0 },
     socialMediaLinks: { type: Object },
+    profilePicture: { type: String },
 }, { timestamps: true });
 
 
