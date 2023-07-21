@@ -34,7 +34,6 @@ upload.post("/file/upload",
     multer({ storage: multer.memoryStorage() }).single("file"),
     async (req, res) => {
         try {
-            console.log(req.file);
             let { originalname, buffer, mimetype } = req.file;
             let { parent_id } = req.query;
             let random = Math.floor(Math.random() * 1000);

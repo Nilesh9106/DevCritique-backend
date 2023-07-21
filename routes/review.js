@@ -32,6 +32,35 @@ router.get('/reviews/author/:id', async (req, res) => {
     }
 });
 
+//add image to review
+router.put('/reviews/image/:id', async (req, res) => {
+    try {
+        let review = await Review.findById(req.params.id);
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+        review.images.push(req.body.imageurl);
+        review = await review.save();
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ error: 'Error adding image to review' });
+    }
+});
+
+//delete image from review
+router.delete('/reviews/image/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+        review.images = review.images.filter(image => image !== req.body.imageurl);
+        review.save();
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ error: 'Error deleting image from review' });
+    }
+});
 
 // Read a specific review by ID
 router.get('/reviews/:id', async (req, res) => {
@@ -71,5 +100,7 @@ router.delete('/reviews/:id', async (req, res) => {
         res.status(500).json({ error: 'Error deleting review' });
     }
 });
+
+
 
 module.exports = router;

@@ -57,6 +57,36 @@ router.get('/projects/author/:id', async (req, res) => {
     }
 });
 
+//add image to project
+router.put('/projects/image/:id', async (req, res) => {
+    try {
+        let project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        project.images.push(req.body.imageurl);
+        project = await project.save();
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating project' });
+    }
+});
+
+//delete image from project
+router.delete('/projects/image/:id', async (req, res) => {
+    try {
+        let project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        project.images = project.images.filter(image => image !== req.body.imageurl);
+        project = await project.save();
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating project' });
+    }
+});
+
 // Read a specific project by ID
 router.get('/projects/:id', async (req, res) => {
     try {
@@ -102,5 +132,7 @@ router.delete('/projects/:id', async (req, res) => {
         res.status(500).json({ error: 'Error deleting project' });
     }
 });
+
+
 
 module.exports = router;

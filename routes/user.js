@@ -37,6 +37,22 @@ router.get('/users', async (req, res) => {
     }
 });
 
+
+//add profile picture
+router.put('/user/profile/:username', async (req, res) => {
+    try {
+        let user = await User.findOne({ username: req.params.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.profilePicture = req.body.imageurl;
+        user = await user.save();
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating user' });
+    }
+});
+
 // Read a specific user by username
 router.get('/users/:username', async (req, res) => {
     try {
