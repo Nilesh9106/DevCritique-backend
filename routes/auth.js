@@ -7,6 +7,19 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
+//api for which check token and return user token is provided in body
+
+router.post("/checkToken", async (req, res) => {
+    try {
+        const token = req.body.token;
+        let decoded = await jwt.verify(token, "RANDOM-TOKEN");
+        const user = await User.findOne({ username: decoded.username })
+        res.status(200).json({ status: true, message: "User Logged in Successfully", user, token });
+    } catch (err) {
+        return res.status(401).send({ status: false, message: err.message });
+    }
+});
+
 router.post("/sign-up", async (req, res) => {
     try {
         // Extract email and password from the req.body object

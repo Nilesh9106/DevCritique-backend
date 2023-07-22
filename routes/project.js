@@ -98,7 +98,7 @@ router.get('/projects/:id', async (req, res) => {
         const ogDetails = await og(project.link);
         project.ogDetails = ogDetails;
 
-        const reviews = await Review.find({ project: req.params.id });
+        const reviews = await Review.find({ project: req.params.id }).populate('author');
         res.json({ project, reviews });
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving project' });

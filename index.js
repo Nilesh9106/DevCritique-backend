@@ -26,28 +26,6 @@ app.use('/api', review);
 app.use('/api', upload);
 
 
-app.get('/fetch-opengraph', async (req, res) => {
-    const { link } = req.query;
-
-    try {
-        const response = await fetch(link);
-        const html = await response.text();
-        const $ = cheerio.load(html);
-
-        const ogDetails = {
-            title: $('meta[property="og:title"]').attr('content') || '',
-            image: $('meta[property="og:image"]').attr('content') || '',
-            description: $('meta[property="og:description"]').attr('content') || '',
-            url: $('meta[property="og:url"]').attr('content') || '',
-        };
-
-        res.json(ogDetails);
-    } catch (error) {
-        console.log('Error fetching Open Graph details:', error);
-        res.status(500).json({ error: 'Failed to fetch Open Graph details' });
-    }
-});
-
 
 const dbURL = process.env.MONGODB_URI || 'mongodb://localhost:27017/devCritique';
 mongoose.connect(dbURL).then(() => {
