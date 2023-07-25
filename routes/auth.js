@@ -2,8 +2,7 @@ const express = require("express");
 const { User } = require("../models/model");
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken");
-
-
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 
@@ -50,11 +49,13 @@ router.post("/sign-up", async (req, res) => {
                 username: username,
                 email: email,
                 password: hash,
+                uniqueString: randString() + username
             });
 
+            // let emailStatus = sendMail(email, user.uniqueString);
             // Save user to database
             user.save().then(() => {
-                res.json({ status: true, message: "User created successfully", user });
+                res.json({ status: true, message: "User created successfully", user/*, emailStatus*/ });
             });
         });
     } catch (err) {
@@ -86,7 +87,6 @@ router.post("/sign-in", async (req, res) => {
                 return res.status(200).json({ status: true, message: "User Logged in Successfully", user, token });
             }
 
-            console.log(err);
             return res.status(401).json({ status: false, message: "Invalid Credentials" });
         });
     } catch (error) {
@@ -94,6 +94,66 @@ router.post("/sign-in", async (req, res) => {
     }
 });
 
+const sendMail = (email, uniqueString) => {
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.EMAIL_ID,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+    });
+    var mailOptions = {
+        from: "Dev Critique Verify Mail",
+        to: email,
+        subject: "Verify your email",
+        html: `Please click on below link to verify your email
+        <br><br>
+        <a href=${process.env.API_LINK}/api/verify/${uniqueString}>Click here to verify</a>
+        <br> Thanks for using our app`,
+    };
+    transporter.sendMail(mailOptions, function (error, responce) {
+        if (error) {
+            return error;
+        } else {
+            return "Email sent: " + responce.response;
+        }
+    });
+};
 
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+function randString() {
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 30; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+router.get("/verify/:uniqueString", async (req, res) => {
+    try {
+        const uniqueString = req.params.uniqueString;
+        let user = await User.findOne({ uniqueString: uniqueString });
+        if (!user) {
+            res.status(401);
+            res.write("<h1>Link Expired</h1>");
+            res.end();
+        }
+        if (user.validated) {
+            res.status(401);
+            res.end("<h1>Email Already Verified</h1>");
+        }
+        else {
+            user.validated = true;
+            user.save();
+            res.status(200);
+            res.end("<h1>Email Verified</h1>");
+        }
+    } catch (error) {
+        res.status(401);
+        res.end("<h1>Link Unvalid</h1>");
+    }
+});
 
 module.exports = router;

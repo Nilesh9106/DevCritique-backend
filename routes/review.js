@@ -15,7 +15,7 @@ router.post('/reviews', async (req, res) => {
 // Read all reviews
 router.get('/reviews', async (req, res) => {
     try {
-        const reviews = await Review.find().populate('author');
+        const reviews = await Review.find().populate('author').sort({ createdAt: 'desc' });
         res.json(reviews);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving reviews' });

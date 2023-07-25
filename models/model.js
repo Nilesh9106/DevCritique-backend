@@ -49,9 +49,9 @@ const userSchema = new mongoose.Schema({
     points: { type: Number, default: 0 },
     socialMediaLinks: { type: Object },
     profilePicture: { type: String },
+    uniqueString: { type: String },
+    validated: { type: Boolean, default: true },
 }, { timestamps: true });
-
-
 
 // Create the models based on the schemas
 const Project = mongoose.model('Project', projectSchema);

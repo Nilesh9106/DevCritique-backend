@@ -31,7 +31,7 @@ router.post('/projects', async (req, res) => {
 // Read all projects
 router.get('/projects', async (req, res) => {
     try {
-        let projects = await Project.find().populate('author');
+        let projects = await Project.find().populate('author').sort({ createdAt: 'desc' });
 
         for (let i = 0; i < projects.length; i++) {
             const ogDetails = await og(projects[i].link);
