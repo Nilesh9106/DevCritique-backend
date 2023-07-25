@@ -61,7 +61,7 @@ router.get('/users/:username', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         const projects = await Project.find({ author: user._id }).populate('author');
-        const reviews = await Review.find({ author: user._id }).populate('author');
+        const reviews = await Review.find({ author: user._id }).populate('author project');
         for (let i = 0; i < projects.length; i++) {
             const ogDetails = await og(projects[i].link);
             projects[i].ogDetails = ogDetails;
@@ -81,7 +81,7 @@ router.put('/users/:username', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         const projects = await Project.find({ author: user._id }).populate('author');
-        const reviews = await Review.find({ author: user._id }).populate('author');
+        const reviews = await Review.find({ author: user._id }).populate('author project');
         for (let i = 0; i < projects.length; i++) {
             const ogDetails = await og(projects[i].link);
             projects[i].ogDetails = ogDetails;
