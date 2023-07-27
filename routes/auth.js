@@ -103,13 +103,57 @@ const sendMail = (email, uniqueString) => {
         },
     });
     var mailOptions = {
-        from: "Dev Critique Verify Mail",
+        from: process.env.EMAIL_ID,
         to: email,
-        subject: "Verify your email",
-        html: `Please click on below link to verify your email
-        <br><br>
-        <a href=${process.env.API_LINK}/api/verify/${uniqueString}>Click here to verify</a>
-        <br> Thanks for using our app`,
+        subject: "Please Verify your email",
+        text: 'Hello, this is email for your email verification',
+        html: `
+        <html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f0f0f0;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    padding: 20px;
+                }
+                .content {
+                    font-size: 16px;
+                    line-height: 1.5;
+                    color: #333333;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #0078d4;
+                    color: #ffffff;
+                    padding: 10px 20px;
+                    text-decoration: none;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="content">
+                    <h1>Welcome to Dev Critique!</h1>
+                    <p>Thank you for signing up with us. To complete your registration, please verify your email address by clicking the button below.</p>
+                    <p><a href=${process.env.API_LINK}/api/verify/${uniqueString} class="button">Verify Email</a></p>
+                    <p>If you did not sign up with us, please ignore this email.</p><br>
+                    <p>If you found any trouble in verfication, try copy and paste below link in browser.</p>
+                    <p>${process.env.API_LINK}/api/verify/${uniqueString}</p>
+                    <br>
+                    <p>Feel free to contact us on our <a href="mailto:${process.env.EMAIL_ID}?subject=Feedback">email</a>
+                     if you have any questions.</p>
+                    <p>Best regards,</p>
+                    <p>Dev Critique Team</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `,
     };
     transporter.sendMail(mailOptions, function (error, responce) {
         if (error) {
@@ -136,23 +180,19 @@ router.get("/verify/:uniqueString", async (req, res) => {
         const uniqueString = req.params.uniqueString;
         let user = await User.findOne({ uniqueString: uniqueString });
         if (!user) {
-            res.status(401);
-            res.write("<h1>Link Expired</h1>");
-            res.end();
+            res.send("<h1>Invalid Link</h1>");
+            return;
         }
         if (user.validated) {
-            res.status(401);
-            res.end("<h1>Email Already Verified</h1>");
+            res.send("<h1>Email Already Verified</h1>");
         }
         else {
             user.validated = true;
-            user.save();
-            res.status(200);
-            res.end("<h1>Email Verified</h1>");
+            await user.save();
+            res.send("<h1>Email Verified</h1>");
         }
     } catch (error) {
-        res.status(401);
-        res.end("<h1>Link Unvalid</h1>");
+        res.send("<h1>Link Unvalid</h1>");
     }
 });
 
