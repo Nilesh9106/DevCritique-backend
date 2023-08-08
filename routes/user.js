@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { User, Project, Review } = require('../models/model');
 const cheerio = require('cheerio')
+const middle = require('../middleware/auth')
+const {deleteFile} = require('../routes/upload');
 const og = async (link) => {
     const response = await fetch(link);
     const html = await response.text();
@@ -28,7 +30,8 @@ router.post('/users', async (req, res) => {
 });
 
 // Read all users
-router.get('/users', async (req, res) => {
+router.get('/users',middle, async (req, res) => {
+
     try {
         const users = await User.find();
         res.json(users);
@@ -44,6 +47,9 @@ router.put('/user/profile/:username', async (req, res) => {
         let user = await User.findOne({ username: req.params.username });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+        if(user.profilePicture){
+            deleteFile(user.profilePicture);
         }
         user.profilePicture = req.body.imageurl;
         user = await user.save();
@@ -95,7 +101,9 @@ router.put('/users/:username', async (req, res) => {
 // Delete a user by ID
 router.delete('/users/:username', async (req, res) => {
     try {
+        deleteProjectsAndReviews(req.params.username);
         const user = await User.findOneAndDelete({ username: req.params.username });
+        deleteFile(user.profilePicture);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -104,5 +112,16 @@ router.delete('/users/:username', async (req, res) => {
         res.status(500).json({ error: 'Error deleting user' });
     }
 });
+
+//delete projects and reviews of user
+async function deleteProjectsAndReviews(userId){
+    try{
+        await Project.deleteMany({author:userId});
+        await Review.deleteMany({author:userId});
+    }
+    catch(error){
+        console.log(error);
+    }
+}
 
 module.exports = router;

@@ -19,13 +19,10 @@ async function handleUpload(file) {
     return res;
 }
 
-
-
-upload.post("/file/upload",
-    multer({ storage: multer.diskStorage({}) }).single("file"),
+upload.post("/file/upload",multer({ storage: multer.diskStorage({}) }).single("file"),
     async (req, res) => {
         try {
-            let fileUploaded = await handleUpload(req.file.path)
+            let fileUploaded = await handleUpload(req.file.path, {quality : "auto"});
 
             res.status(200).json({ success: true, fileURL: fileUploaded.url });
 
@@ -35,13 +32,12 @@ upload.post("/file/upload",
     });
 
 
-upload.use(async (req, res, next) => {
-    res.status(404).send("Sorry can't find that!");
+async function deleteFile(imageurl) {
+    try {
+        let public_id = imageurl.split("/").pop().split(".")[0];
+        let deleted = await cloudinary.uploader.destroy(public_id);
+    } catch (err) {
+        console.log(err);
+    }
 }
-);
-
-upload.use(async (err, req, res, next) => {
-    res.status(500).send("Something broke!");
-});
-
-module.exports = upload;
+module.exports = {upload, deleteFile};

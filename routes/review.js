@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Review } = require('../models/model');
+const { Review,User } = require('../models/model');
+const middle = require('../middleware/auth')
 
 // Create a new review
-router.post('/reviews', async (req, res) => {
+router.post('/reviews',middle, async (req, res) => {
     try {
         const review = await Review.create(req.body);
         res.status(201).json(review);
@@ -76,12 +77,13 @@ router.get('/reviews/:id', async (req, res) => {
 });
 
 // Update a review by ID
-router.put('/reviews/:id', async (req, res) => {
+router.put('/reviews/:id',middle, async (req, res) => {
     try {
         const review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
+        User.updatePoints(review.author._id);
         res.json(review);
     } catch (error) {
         res.status(500).json({ error: 'Error updating review' });
@@ -89,7 +91,7 @@ router.put('/reviews/:id', async (req, res) => {
 });
 
 // Delete a review by ID
-router.delete('/reviews/:id', async (req, res) => {
+router.delete('/reviews/:id', middle, async (req, res) => {
     try {
         const review = await Review.findByIdAndDelete(req.params.id);
         if (!review) {

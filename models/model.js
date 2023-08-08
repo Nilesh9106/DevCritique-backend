@@ -52,6 +52,14 @@ const userSchema = new mongoose.Schema({
     uniqueString: { type: String },
     validated: { type: Boolean, default: true },
 }, { timestamps: true });
+userSchema.static('updatePoints', async function(id){
+    const reviews = await Review.find({author:id});
+    let score = 0;
+    reviews.forEach(review => {
+        score+= review.rating*10;
+    });
+    await User.findByIdAndUpdate(id,{$set:{points:score}});
+})
 
 // Create the models based on the schemas
 const Project = mongoose.model('Project', projectSchema);

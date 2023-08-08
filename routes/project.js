@@ -1,25 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { Project, Review } = require('../models/model');
-const cheerio = require('cheerio');
+const middle = require('../middleware/auth')
+const {og} = require('../middleware/utils')
+const {deleteFile} = require('../routes/upload');
 
-const og = async (link) => {
-    const response = await fetch(link);
-    const html = await response.text();
-    const $ = cheerio.load(html);
 
-    const ogDetails = {
-        title: $('meta[property="og:title"]').attr('content') || '',
-        image: $('meta[property="og:image"]').attr('content') || '',
-        description: $('meta[property="og:description"]').attr('content') || '',
-        url: $('meta[property="og:url"]').attr('content') || '',
-    };
-    return ogDetails;
-}
+
 
 // Create a new project
 
-router.post('/projects', async (req, res) => {
+router.post('/projects',middle, async (req, res) => {
     try {
         const project = await Project.create(req.body);
         res.status(201).json(project);
@@ -106,14 +97,25 @@ router.get('/projects/:id', async (req, res) => {
 });
 
 // Update a project by ID
-router.put('/projects/:id', async (req, res) => {
+router.put('/projects/:id',middle, async (req, res) => {
     try {
-        const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const project =await Project.findById(req.params.id);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
+        if(req.user != project.author._id){
+            res.status(401).json({
+                err:"You are not allowed to do that"
+            })
+        }
+
+        project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        
+        // console.log(req.user);
+        
         const ogDetails = await og(project.link);
         project.ogDetails = ogDetails;
+        
         res.json(project);
     } catch (error) {
         res.status(500).json({ error: 'Error updating project' });
@@ -121,17 +123,33 @@ router.put('/projects/:id', async (req, res) => {
 });
 
 // Delete a project by ID
-router.delete('/projects/:id', async (req, res) => {
+router.delete('/projects/:id',middle, async (req, res) => {
     try {
-        const project = await Project.findByIdAndDelete(req.params.id);
+        const project = await Project.findById(req.params.id);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
+        if(req.user != project.author._id){
+            res.status(401).json({
+                err:"You are not allowed to do that"
+            })
+        }
+        await Project.findByIdAndDelete(req.params.id);
+        deleteReviews(req.params.id);
         res.json({ message: 'Project deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Error deleting project' });
     }
 });
+
+//delete reviews of deleted project
+async function deleteReviews(projectId){
+    try {
+        await Review.deleteMany({project:projectId});
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 
 

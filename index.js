@@ -9,7 +9,7 @@ const review = require('./routes/review');
 const cheerio = require('cheerio');
 const bodyParser = require("body-parser");
 const auth = require('./routes/auth');
-const upload = require('./routes/upload');
+const {upload} = require('./routes/upload');
 
 dotenv.config();
 const app = express();
@@ -27,7 +27,7 @@ app.use('/api', upload);
 
 
 
-const dbURL = process.env.MONGODB_URI || 'mongodb://localhost:27017/devCritique';
+const dbURL = process.env.MONGODB_URI;
 mongoose.connect(dbURL).then(() => {
     console.log("DB Connected");
 }).catch((err) => {
