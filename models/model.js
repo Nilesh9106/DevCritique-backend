@@ -11,8 +11,6 @@ const projectSchema = new mongoose.Schema({
     images: [{ type: String }],
 }, { timestamps: true });
 
-
-
 // Define the schema for the Reviews
 const reviewSchema = new mongoose.Schema({
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
@@ -27,6 +25,7 @@ const reviewSchema = new mongoose.Schema({
 
 // Define the schema for the Users
 const userSchema = new mongoose.Schema({
+    name: { type: String, default: null },
     username: { type: String, unique: true },
     email: {
         type: String,
@@ -52,15 +51,27 @@ const userSchema = new mongoose.Schema({
     uniqueString: { type: String },
     validated: { type: Boolean, default: true },
 }, { timestamps: true });
-userSchema.static('updatePoints', async function(id){
-    const reviews = await Review.find({author:id});
+userSchema.static('updatePoints', async function (id) {
+    const reviews = await Review.find({ author: id });
     let score = 0;
     reviews.forEach(review => {
-        score+= review.rating*10;
+        score += review.rating * 10;
     });
-    await User.findByIdAndUpdate(id,{$set:{points:score}});
+    await User.findByIdAndUpdate(id, { $set: { points: score } });
 })
 
+userSchema.pre('remove', async function (next) {
+    await Project.deleteMany({ author: this._id });
+    await Review.deleteMany({ author: this._id });
+    next();
+});
+projectSchema.pre('remove', async function (next) {
+    const reviews = await Review.find({ project: this._id });
+    for (const review of reviews) {
+        await review.remove();
+    }
+    next();
+});
 // Create the models based on the schemas
 const Project = mongoose.model('Project', projectSchema);
 const Review = mongoose.model('Review', reviewSchema);
