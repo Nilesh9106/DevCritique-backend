@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { Project, Review } = require('../models/model');
 const middle = require('../middleware/auth')
-const {og} = require('../middleware/utils')
-const {deleteFile} = require('../routes/upload');
+const { og } = require('../middleware/utils')
+const { deleteFile } = require('../routes/upload');
 
 
 
 
 // Create a new project
 
-router.post('/projects',middle, async (req, res) => {
+router.post('/projects', middle, async (req, res) => {
     try {
         const project = await Project.create(req.body);
         res.status(201).json(project);
@@ -27,6 +27,7 @@ router.get('/projects', async (req, res) => {
         for (let i = 0; i < projects.length; i++) {
             const ogDetails = await og(projects[i].link);
             projects[i].ogDetails = ogDetails;
+            await projects[i].save();
         }
 
         res.json(projects);
@@ -97,25 +98,25 @@ router.get('/projects/:id', async (req, res) => {
 });
 
 // Update a project by ID
-router.put('/projects/:id',middle, async (req, res) => {
+router.put('/projects/:id', middle, async (req, res) => {
     try {
-        const project =await Project.findById(req.params.id);
+        const project = await Project.findById(req.params.id);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        if(req.user != project.author._id){
+        if (req.user != project.author._id) {
             res.status(401).json({
-                err:"You are not allowed to do that"
+                err: "You are not allowed to do that"
             })
         }
 
         project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        
+
         // console.log(req.user);
-        
+
         const ogDetails = await og(project.link);
         project.ogDetails = ogDetails;
-        
+
         res.json(project);
     } catch (error) {
         res.status(500).json({ error: 'Error updating project' });
@@ -123,15 +124,15 @@ router.put('/projects/:id',middle, async (req, res) => {
 });
 
 // Delete a project by ID
-router.delete('/projects/:id',middle, async (req, res) => {
+router.delete('/projects/:id', middle, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        if(req.user != project.author._id){
+        if (req.user != project.author._id) {
             res.status(401).json({
-                err:"You are not allowed to do that"
+                err: "You are not allowed to do that"
             })
         }
         await Project.findByIdAndDelete(req.params.id);
@@ -143,9 +144,9 @@ router.delete('/projects/:id',middle, async (req, res) => {
 });
 
 //delete reviews of deleted project
-async function deleteReviews(projectId){
+async function deleteReviews(projectId) {
     try {
-        await Review.deleteMany({project:projectId});
+        await Review.deleteMany({ project: projectId });
     } catch (error) {
         console.log(error);
     }
