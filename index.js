@@ -10,6 +10,7 @@ const cheerio = require('cheerio');
 const bodyParser = require("body-parser");
 const auth = require('./routes/auth');
 const {upload} = require('./routes/upload');
+const search = require('./routes/search');
 
 dotenv.config();
 const app = express();
@@ -24,7 +25,7 @@ app.use('/api', comment);
 app.use('/api', user);
 app.use('/api', review);
 app.use('/api', upload);
-
+app.use('/api', search);
 
 
 const dbURL = process.env.MONGODB_URI;
