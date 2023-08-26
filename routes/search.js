@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {Project} = require('../models/model');
+const { Project } = require('../models/model');
 
 router.get('/search/technology/:technology', async (req, res) => {
     try {
@@ -19,8 +19,30 @@ router.get('/search/description/:description', async (req, res) => {
             res.status(400).send("Please enter a description");
         }
         else {
-            const projects = await Project.find({ $text: { $search: "website" } });
-            res.status(200).send({ projects });
+            // const projects = await Project.find({ $text: { $search: req.params.description } });
+            const projects = await Project.aggregate([
+                {
+                    $search: {
+                        index: "projectkey",
+                        text: {
+                            query: req.params.description,
+                            path: {
+                                wildcard: "*"
+                            }
+                        }
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "author",
+                        foreignField: "_id",
+                        as: "author"
+                    },
+                },
+            ]);
+
+            res.status(200).send(projects);
         }
     } catch (err) {
         res.status(400).send(err);
