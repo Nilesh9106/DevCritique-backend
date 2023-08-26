@@ -1,7 +1,7 @@
 
 const cheerio = require('cheerio');
 module.exports.og = async (link) => {
-    const response = await fetch(link);
+    const response = await fetch(link, { redirect: "follow" });
     const html = await response.text();
     const $ = cheerio.load(html);
 

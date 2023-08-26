@@ -13,9 +13,12 @@ const { deleteFile } = require('../routes/upload');
 router.post('/projects', middle, async (req, res) => {
     try {
         const project = await Project.create(req.body);
+        const ogDetails = await og(project.link);
+        project.ogDetails = ogDetails;
+        project.save();
         res.status(201).json(project);
     } catch (error) {
-        res.status(500).json({ error: 'Error creating project' });
+        res.status(500).json({ error: 'Error creating project ' + error });
     }
 });
 
@@ -23,12 +26,6 @@ router.post('/projects', middle, async (req, res) => {
 router.get('/projects', async (req, res) => {
     try {
         let projects = await Project.find().populate('author').sort({ createdAt: 'desc' });
-
-        for (let i = 0; i < projects.length; i++) {
-            const ogDetails = await og(projects[i].link);
-            projects[i].ogDetails = ogDetails;
-            await projects[i].save();
-        }
 
         res.json(projects);
     } catch (error) {
@@ -39,10 +36,6 @@ router.get('/projects', async (req, res) => {
 router.get('/projects/author/:id', async (req, res) => {
     try {
         const projects = await Project.find({ author: req.params.id }).populate('author');
-        for (let i = 0; i < projects.length; i++) {
-            const ogDetails = await og(projects[i].link);
-            projects[i].ogDetails = ogDetails;
-        }
         res.json(projects);
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving projects' });
@@ -87,8 +80,6 @@ router.get('/projects/:id', async (req, res) => {
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        const ogDetails = await og(project.link);
-        project.ogDetails = ogDetails;
 
         const reviews = await Review.find({ project: req.params.id }).populate('author project');
         res.json({ project, reviews });
@@ -111,11 +102,6 @@ router.put('/projects/:id', middle, async (req, res) => {
         }
 
         project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
-
-        // console.log(req.user);
-
-        const ogDetails = await og(project.link);
-        project.ogDetails = ogDetails;
 
         res.json(project);
     } catch (error) {
