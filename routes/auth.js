@@ -12,8 +12,7 @@ router.post("/checkToken", async (req, res) => {
     try {
         const token = req.body.token;
         let decoded = await jwt.verify(token, "RANDOM-TOKEN");
-        const user = await User.findOne({ username: decoded.username })
-        res.status(200).json({ status: true, message: "User Logged in Successfully", user, token });
+        res.status(200).json({ status: true, message: "User Logged in Successfully", user: decoded, token });
     } catch (err) {
         return res.status(401).send({ status: false, message: err.message });
     }
@@ -75,12 +74,7 @@ router.post("/sign-in", async (req, res) => {
         }
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                const token = jwt.sign(
-                    {
-                        id: user._id,
-                        username: user.username,
-                        email: user.email,
-                    },
+                const token = jwt.sign(user.toObject(),
                     "RANDOM-TOKEN",
                     { expiresIn: "30d" }
                 );

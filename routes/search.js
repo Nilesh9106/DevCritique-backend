@@ -5,7 +5,7 @@ const { Project } = require('../models/model');
 router.get('/search/technology/:technology', async (req, res) => {
     try {
         const technology = req.params.technology;
-        const projects = await Project.find({ technologies: technology });
+        const projects = await Project.find({ technologies: { '$regex': technology, $options: "i" } })
         res.status(200).send(projects);
     } catch (err) {
         res.status(400).send(err);
