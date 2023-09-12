@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
     socialMediaLinks: { type: Object },
     profilePicture: { type: String },
     uniqueString: { type: String },
-    validated: { type: Boolean, default: true },
+    validated: { type: Boolean, default: false },
 }, { timestamps: true });
 userSchema.static('updatePoints', async function (id) {
     const reviews = await Review.find({ author: id });

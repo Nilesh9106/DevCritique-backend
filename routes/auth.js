@@ -51,10 +51,11 @@ router.post("/sign-up", async (req, res) => {
                 uniqueString: randString() + username
             });
 
-            // let emailStatus = sendMail(email, user.uniqueString);
+            let emailStatus = sendMail(email, user.uniqueString);
+
             // Save user to database
             user.save().then(() => {
-                res.json({ status: true, message: "User created successfully", user/*, emailStatus*/ });
+                res.json({ status: true, message: "User created successfully! please verify your email address", user, emailStatus });
             });
         });
     } catch (err) {
@@ -69,8 +70,12 @@ router.post("/sign-in", async (req, res) => {
 
         // Check if user exists in database
         let user = await User.findOne({ $or: [{ email: email }, { username: email }] });
+
         if (!user) {
             return res.status(401).json({ status: false, message: "Account not Found!!" });
+        }
+        if (user.validated === false) {
+            return res.status(401).json({ status: false, message: "Email not verified!!" });
         }
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
@@ -78,6 +83,7 @@ router.post("/sign-in", async (req, res) => {
                     "RANDOM-TOKEN",
                     { expiresIn: "30d" }
                 );
+
                 return res.status(200).json({ status: true, message: "User Logged in Successfully", user, token });
             }
 
@@ -122,8 +128,9 @@ const sendMail = (email, uniqueString) => {
                 }
                 .button {
                     display: inline-block;
-                    background-color: #0078d4;
-                    color: #ffffff;
+                    background-color: violet;
+                    color: white;
+                    border-radius:10px;
                     padding: 10px 20px;
                     text-decoration: none;
                 }
@@ -134,10 +141,10 @@ const sendMail = (email, uniqueString) => {
                 <div class="content">
                     <h1>Welcome to Dev Critique!</h1>
                     <p>Thank you for signing up with us. To complete your registration, please verify your email address by clicking the button below.</p>
-                    <p><a href=${process.env.API_LINK}/api/verify/${uniqueString} class="button">Verify Email</a></p>
+                    <p><a href=${process.env.API_LINK}api/verify/${uniqueString} class="button">Verify Email</a></p>
                     <p>If you did not sign up with us, please ignore this email.</p><br>
                     <p>If you found any trouble in verfication, try copy and paste below link in browser.</p>
-                    <p>${process.env.API_LINK}/api/verify/${uniqueString}</p>
+                    <p>${process.env.API_LINK}api/verify/${uniqueString}</p>
                     <br>
                     <p>Feel free to contact us on our <a href="mailto:${process.env.EMAIL_ID}?subject=Feedback">email</a>
                      if you have any questions.</p>
@@ -178,15 +185,15 @@ router.get("/verify/:uniqueString", async (req, res) => {
             return;
         }
         if (user.validated) {
-            res.send("<h1>Email Already Verified</h1>");
+            res.send("<h1>Email Already Verified</h1><br><a href='https://devcritique.vercel.app/login'>Login</a>");
         }
         else {
             user.validated = true;
             await user.save();
-            res.send("<h1>Email Verified</h1>");
+            res.send("<h1>Email Verified</h1><br><a href='https://devcritique.vercel.app/login'>Login</a>");
         }
     } catch (error) {
-        res.send("<h1>Link Unvalid</h1>");
+        res.send("<h1>Link invalid</h1>");
     }
 });
 
