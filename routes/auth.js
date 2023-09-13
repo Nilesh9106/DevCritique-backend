@@ -40,7 +40,7 @@ router.post("/sign-up", async (req, res) => {
         const saltRounds = 5;
 
         // Hash password
-        bcrypt.hash(password, saltRounds, (err, hash) => {
+        bcrypt.hash(password, saltRounds, async (err, hash) => {
             if (err) throw new Error("Internal Server Error");
 
             // Create a new user
@@ -51,11 +51,11 @@ router.post("/sign-up", async (req, res) => {
                 uniqueString: randString() + username
             });
 
-            let emailStatus = sendMail(email, user.uniqueString);
+            await sendMail(email, user.uniqueString);
 
             // Save user to database
             user.save().then(() => {
-                res.json({ status: true, message: "User created successfully! please verify your email address", user, emailStatus });
+                res.json({ status: true, message: "User created successfully! please verify your email address", user });
             });
         });
     } catch (err) {
@@ -94,7 +94,7 @@ router.post("/sign-in", async (req, res) => {
     }
 });
 
-const sendMail = (email, uniqueString) => {
+const sendMail = async (email, uniqueString) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -102,6 +102,7 @@ const sendMail = (email, uniqueString) => {
             pass: process.env.EMAIL_PASSWORD,
         },
     });
+    console.log("in mail");
     var mailOptions = {
         from: process.env.EMAIL_ID,
         to: email,
@@ -158,8 +159,10 @@ const sendMail = (email, uniqueString) => {
     };
     transporter.sendMail(mailOptions, function (error, responce) {
         if (error) {
+            console.log(error);
             return error;
         } else {
+            console.log("Email sent: " + responce.response);
             return "Email sent: " + responce.response;
         }
     });

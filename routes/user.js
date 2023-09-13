@@ -15,40 +15,10 @@ router.post('/users', async (req, res) => {
     }
 });
 
-// Read all users
-router.get('/users', middle, async (req, res) => {
-
-    try {
-        const users = await User.find();
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ error: 'Error retrieving users' });
-    }
-});
-
-
-//add profile picture
-router.put('/user/profile/:username', async (req, res) => {
-    try {
-        let user = await User.findOne({ username: req.params.username });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        if (user.profilePicture) {
-            deleteFile(user.profilePicture);
-        }
-        user.profilePicture = req.body.imageurl;
-        user = await user.save();
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ error: 'Error updating user' });
-    }
-});
-
 // Read a specific user by username
 router.get('/users/:username', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.params.username });
+        const user = await User.findOne({ username: req.params.username }).select('-password -uniqueString -validated');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -62,9 +32,9 @@ router.get('/users/:username', async (req, res) => {
 });
 
 // Update a user by ID
-router.put('/users/:username', async (req, res) => {
+router.put('/users/:username', middle, async (req, res) => {
     try {
-        const user = await User.findOneAndUpdate({ username: req.params.username }, req.body, { new: true });
+        const user = await User.findOneAndUpdate({ username: req.params.username }, req.body, { new: true }).select('-password -uniqueString -validated');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -78,7 +48,7 @@ router.put('/users/:username', async (req, res) => {
 });
 
 // Delete a user by ID
-router.delete('/users/:username', async (req, res) => {
+router.delete('/users/:username', middle, async (req, res) => {
     try {
         deleteProjectsAndReviews(req.params.username);
         const user = await User.findOneAndDelete({ username: req.params.username });
