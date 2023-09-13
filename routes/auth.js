@@ -103,7 +103,7 @@ const sendMail = async (email, uniqueString) => {
             pass: process.env.EMAIL_PASSWORD,
         },
     });
-    console.log("in mail", process.env.EMAIL_ID, process.env.EMAIL_PASSWORD);
+    console.log("in mail", process.env.EMAIL_ID);
     var mailOptions = {
         from: process.env.EMAIL_ID,
         to: email,
