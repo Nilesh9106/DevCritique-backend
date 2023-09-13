@@ -5,7 +5,8 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 const router = express.Router();
-
+var dotenv = require("dotenv")
+dotenv.config()
 //api for which check token and return user token is provided in body
 
 router.post("/checkToken", async (req, res) => {
