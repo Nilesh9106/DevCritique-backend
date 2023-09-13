@@ -158,14 +158,16 @@ const sendMail = async (email, uniqueString) => {
         </html>
         `,
     };
-    transporter.sendMail(mailOptions, function (error, responce) {
-        if (error) {
-            console.log(error);
-            return error;
-        } else {
-            console.log("Email sent: " + responce.response);
-            return "Email sent: " + responce.response;
-        }
+    await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, function (error, responce) {
+            if (error) {
+                console.log(error);
+                reject(error);
+            } else {
+                console.log("Email sent: " + responce.response);
+                resolve("Email sent: " + responce.response);
+            }
+        });
     });
 };
 
