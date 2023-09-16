@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
     },
     points: { type: Number, default: 0 },
     socialMediaLinks: { type: Object },
-    profilePicture: { type: String },
+    profilePicture: { type: String, default: "/user.png" },
     uniqueString: { type: String },
     validated: { type: Boolean, default: false },
 }, { timestamps: true });
