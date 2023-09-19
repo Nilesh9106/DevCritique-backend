@@ -6,10 +6,11 @@ const middle = require('../middleware/auth')
 // Create a new review
 router.post('/reviews', middle, async (req, res) => {
     try {
-        const review = await Review.create(req.body);
-        review = await review.populate('author project').execPopulate();
+        var review = await Review.create(req.body);
+        review = await review.populate('author project');
         res.status(201).json(review);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'Error creating review' });
     }
 });

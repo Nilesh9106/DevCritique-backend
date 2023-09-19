@@ -5,14 +5,11 @@ const middle = require('../middleware/auth')
 const { og } = require('../middleware/utils')
 const { deleteFile } = require('../routes/upload');
 
-
-
-
 // Create a new project
 
 router.post('/projects', middle, async (req, res) => {
     try {
-        const project = await Project.create(req.body);
+        var project = await Project.create(req.body);
         const ogDetails = await og(project.link);
         project.ogDetails = ogDetails;
         project.save();
