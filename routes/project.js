@@ -13,7 +13,7 @@ router.post('/projects', middle, async (req, res) => {
         const ogDetails = await og(project.link);
         project.ogDetails = ogDetails;
         project.save();
-        project = await project.populate('author').execPopulate();
+        project = await project.populate('author');
         res.status(201).json(project);
     } catch (error) {
         res.status(500).json({ message: 'Error creating project ' });
