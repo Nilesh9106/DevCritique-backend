@@ -5,10 +5,10 @@ const { Project } = require('../models/model');
 router.get('/search/technology/:technology', async (req, res) => {
     try {
         const technology = req.params.technology;
-        const projects = await Project.find({ technologies: { '$regex': '^'+technology+'$', $options: "i" } }).populate("author");
+        const projects = await Project.find({ technologies: { '$regex': '^' + technology + '$', $options: "i" } }).populate("author");
         res.status(200).send(projects);
     } catch (err) {
-        res.status(400).send(err);
+        res.status(400).send({ message: err });
     }
 });
 
@@ -16,7 +16,7 @@ router.get('/search/description/:description', async (req, res) => {
     try {
         const description = req.params.description;
         if (description === undefined) {
-            res.status(400).send("Please enter a description");
+            res.status(400).send({ message: "Please enter a description" });
         }
         else {
             // const projects = await Project.find({ $text: { $search: req.params.description } });
@@ -45,7 +45,7 @@ router.get('/search/description/:description', async (req, res) => {
             res.status(200).send(projects);
         }
     } catch (err) {
-        res.status(400).send(err);
+        res.status(400).send({ message: err });
     }
 }
 );

@@ -11,7 +11,7 @@ router.post('/users', async (req, res) => {
         const user = await User.create(req.body);
         res.status(201).json(user);
     } catch (error) {
-        res.status(500).json({ error: 'Error creating user' });
+        res.status(500).json({ message: 'Error creating user' });
     }
 });
 
@@ -27,7 +27,7 @@ router.get('/users/:username', async (req, res) => {
 
         res.json({ user, projects, reviews });
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving user' });
+        res.status(500).json({ message: 'Error retrieving user' });
     }
 });
 
@@ -43,7 +43,7 @@ router.put('/users/:username', middle, async (req, res) => {
 
         res.json({ user, projects, reviews });
     } catch (error) {
-        res.status(500).json({ error: 'Error updating user' });
+        res.status(500).json({ message: 'Error updating user' });
     }
 });
 
@@ -58,7 +58,7 @@ router.delete('/users/:username', middle, async (req, res) => {
         }
         res.json({ status: true, message: 'User deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error deleting user' });
+        res.status(500).json({ message: 'Error deleting user' });
     }
 });
 
@@ -69,7 +69,7 @@ async function deleteProjectsAndReviews(userId) {
         await Review.deleteMany({ author: userId });
     }
     catch (error) {
-        console.log(error);
+        console.log({ message: error });
     }
 }
 

@@ -12,7 +12,7 @@ router.post('/comments', async (req, res) => {
         res.json(review);
     }
     catch (error) {
-        res.status(500).json({ error: 'Error creating comment' });
+        res.status(500).json({ message: 'Error posting comment' });
     }
 });
 

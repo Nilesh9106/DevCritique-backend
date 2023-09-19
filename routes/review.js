@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { Review,User } = require('../models/model');
+const { Review, User } = require('../models/model');
 const middle = require('../middleware/auth')
 
 // Create a new review
-router.post('/reviews',middle, async (req, res) => {
+router.post('/reviews', middle, async (req, res) => {
     try {
         const review = await Review.create(req.body);
+        review = await review.populate('author project').execPopulate();
         res.status(201).json(review);
     } catch (error) {
-        res.status(500).json({ error: 'Error creating review' });
+        res.status(500).json({ message: 'Error creating review' });
     }
 });
 
@@ -19,7 +20,7 @@ router.get('/reviews', async (req, res) => {
         const reviews = await Review.find().populate('author project').sort({ createdAt: 'desc' });
         res.json(reviews);
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving reviews' });
+        res.status(500).json({ message: 'Error retrieving reviews' });
     }
 });
 
@@ -29,7 +30,7 @@ router.get('/reviews/author/:id', async (req, res) => {
         const reviews = await Review.find({ author: req.params.id }).populate('author project');
         res.json(reviews);
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving reviews' });
+        res.status(500).json({ message: 'Error retrieving reviews' });
     }
 });
 
@@ -44,7 +45,7 @@ router.put('/reviews/image/:id', async (req, res) => {
         review = await review.save();
         res.json(review);
     } catch (error) {
-        res.status(500).json({ error: 'Error adding image to review' });
+        res.status(500).json({ message: 'Error adding image to review' });
     }
 });
 
@@ -59,7 +60,7 @@ router.delete('/reviews/image/:id', async (req, res) => {
         review.save();
         res.json(review);
     } catch (error) {
-        res.status(500).json({ error: 'Error deleting image from review' });
+        res.status(500).json({ message: 'Error deleting image from review' });
     }
 });
 
@@ -72,12 +73,12 @@ router.get('/reviews/:id', async (req, res) => {
         }
         res.json(review);
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving review' });
+        res.status(500).json({ message: 'Error retrieving review' });
     }
 });
 
 // Update a review by ID
-router.put('/reviews/:id',middle, async (req, res) => {
+router.put('/reviews/:id', middle, async (req, res) => {
     try {
         const review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!review) {
@@ -86,7 +87,7 @@ router.put('/reviews/:id',middle, async (req, res) => {
         User.updatePoints(review.author._id);
         res.json(review);
     } catch (error) {
-        res.status(500).json({ error: 'Error updating review' });
+        res.status(500).json({ message: 'Error updating review' });
     }
 });
 
@@ -99,7 +100,7 @@ router.delete('/reviews/:id', middle, async (req, res) => {
         }
         res.json({ message: 'Review deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error deleting review' });
+        res.status(500).json({ message: 'Error deleting review' });
     }
 });
 

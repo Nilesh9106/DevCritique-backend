@@ -19,15 +19,15 @@ async function handleUpload(file) {
     return res;
 }
 
-upload.post("/file/upload",multer({ storage: multer.diskStorage({}) }).single("file"),
+upload.post("/file/upload", multer({ storage: multer.diskStorage({}) }).single("file"),
     async (req, res) => {
         try {
-            let fileUploaded = await handleUpload(req.file.path, {quality : "auto"});
+            let fileUploaded = await handleUpload(req.file.path, { quality: "auto" });
 
             res.status(200).json({ success: true, fileURL: fileUploaded.url });
 
         } catch (err) {
-            res.status(500).json({ success: false, error: err });
+            res.status(500).json({ success: false, message: err });
         }
     });
 
@@ -40,4 +40,4 @@ async function deleteFile(imageurl) {
         console.log(err);
     }
 }
-module.exports = {upload, deleteFile};
+module.exports = { upload, deleteFile };

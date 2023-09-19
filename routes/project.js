@@ -16,9 +16,10 @@ router.post('/projects', middle, async (req, res) => {
         const ogDetails = await og(project.link);
         project.ogDetails = ogDetails;
         project.save();
+        project = await project.populate('author').execPopulate();
         res.status(201).json(project);
     } catch (error) {
-        res.status(500).json({ error: 'Error creating project ' + error });
+        res.status(500).json({ message: 'Error creating project ' });
     }
 });
 
@@ -29,7 +30,7 @@ router.get('/projects', async (req, res) => {
 
         res.json(projects);
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving projects' });
+        res.status(500).json({ message: 'Error retrieving projects' });
     }
 });
 // Read all projects by author
@@ -38,7 +39,7 @@ router.get('/projects/author/:id', async (req, res) => {
         const projects = await Project.find({ author: req.params.id }).populate('author');
         res.json(projects);
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving projects' });
+        res.status(500).json({ message: 'Error retrieving projects' });
     }
 });
 
@@ -53,7 +54,7 @@ router.put('/projects/image/:id', async (req, res) => {
         project = await project.save();
         res.json(project);
     } catch (error) {
-        res.status(500).json({ error: 'Error updating project' });
+        res.status(500).json({ message: 'Error updating project' });
     }
 });
 
@@ -68,7 +69,7 @@ router.delete('/projects/image/:id', async (req, res) => {
         project = await project.save();
         res.json(project);
     } catch (error) {
-        res.status(500).json({ error: 'Error updating project' });
+        res.status(500).json({ message: 'Error updating project' });
     }
 });
 
@@ -84,7 +85,7 @@ router.get('/projects/:id', async (req, res) => {
         const reviews = await Review.find({ project: req.params.id }).populate('author project');
         res.json({ project, reviews });
     } catch (error) {
-        res.status(500).json({ error: 'Error retrieving project' });
+        res.status(500).json({ message: 'Error retrieving project' });
     }
 });
 
@@ -97,7 +98,7 @@ router.put('/projects/:id', middle, async (req, res) => {
         }
         if (req.user != project.author._id) {
             res.status(401).json({
-                err: "You are not allowed to do that"
+                message: "You are not allowed to update this project"
             })
         }
 
@@ -105,7 +106,7 @@ router.put('/projects/:id', middle, async (req, res) => {
 
         res.json(project);
     } catch (error) {
-        res.status(500).json({ error: 'Error updating project' });
+        res.status(500).json({ message: 'Error updating project' });
     }
 });
 
@@ -125,7 +126,7 @@ router.delete('/projects/:id', middle, async (req, res) => {
         deleteReviews(req.params.id);
         res.json({ message: 'Project deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error deleting project' });
+        res.status(500).json({ message: 'Error deleting project' });
     }
 });
 

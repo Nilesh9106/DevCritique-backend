@@ -10,12 +10,12 @@ module.exports = async (request, response, next) => {
             next();
         } else {
             response.status(401).json({
-                err: "you are not authorized"
+                message: "you are not authorized"
             })
         }
     } catch (error) {
         response.status(401).json({
-            error: "you are not authorized!",
+            message: "you are not authorized!",
         });
     }
 };
