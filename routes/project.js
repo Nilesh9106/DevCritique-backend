@@ -116,7 +116,7 @@ router.delete('/projects/:id', middle, async (req, res) => {
         }
         if (req.user != project.author._id) {
             res.status(401).json({
-                err: "You are not allowed to do that"
+                message: "You are not allowed to do that"
             })
         }
         await Project.findByIdAndDelete(req.params.id);
