@@ -12,8 +12,9 @@ dotenv.config()
 router.post("/checkToken", async (req, res) => {
     try {
         const token = req.body.token;
-        let decoded = await jwt.verify(token, "RANDOM-TOKEN");
-        res.status(200).json({ status: true, message: "User Logged in Successfully", user: decoded, token });
+        let decoded = await jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findOne({ _id: decoded._id }).select("-password -uniqueString -validated");
+        res.status(200).json({ status: true, message: "User Logged in Successfully", user: user, token });
     } catch (err) {
         return res.status(401).send({ status: false, message: err.message });
     }
@@ -80,8 +81,11 @@ router.post("/sign-in", async (req, res) => {
         }
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                const token = jwt.sign(user.toObject(),
-                    "RANDOM-TOKEN",
+                const token = jwt.sign({
+                    _id: user._id,
+                    username: user.username,
+                },
+                    process.env.JWT_SECRET,
                     { expiresIn: "30d" }
                 );
 
