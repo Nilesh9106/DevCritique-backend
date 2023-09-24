@@ -6,7 +6,7 @@ const projectSchema = new mongoose.Schema({
     link: { type: String, required: true },
     description: { type: String, required: true },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    technologies: [{ type: String }],
+    technologies: [{ type: String, trim: true }],
     ogDetails: { type: Object },
     images: [{ type: String }],
 }, { timestamps: true });
@@ -20,16 +20,20 @@ const reviewSchema = new mongoose.Schema({
     status: { type: String, enum: ['solved', 'pending', 'rejected'], default: 'pending' },
     comments: [Object],
     images: [{ type: String }],
+    upVote: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    upVoteCount: { type: Number, default: 0 },
 }, { timestamps: true });
 
 
 // Define the schema for the Users
 const userSchema = new mongoose.Schema({
-    name: { type: String, default: null },
-    username: { type: String, unique: true },
+    name: { type: String, default: null, trim: true },
+    username: { type: String, unique: true, trim: true },
     email: {
         type: String,
         required: [true, 'Email is required'],
+        unique: true,
+        trim: true,
         validate: {
             validator: isEmail,
             message: props => `${props.value} is not a valid email`
@@ -38,6 +42,7 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Password is required'],
+        trim: true,
         validate: {
             validator: function (value) {
                 return value.length >= 6

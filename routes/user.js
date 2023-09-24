@@ -9,9 +9,18 @@ const { deleteFile } = require('../routes/upload');
 router.post('/users', async (req, res) => {
     try {
         const user = await User.create(req.body);
-        res.status(201).json(user);
+        res.status(200).json(user);
     } catch (error) {
         res.status(500).json({ message: 'Error creating user' });
+    }
+});
+
+router.get('/topUsers', async (req, res) => {
+    try {
+        const users = await User.find().gt("points", 0).sort({ points: -1 }).limit(5).select('-password -uniqueString -validated');
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: "Can't fetch top Users" });
     }
 });
 

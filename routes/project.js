@@ -79,7 +79,7 @@ router.get('/projects/:id', async (req, res) => {
             return res.status(404).json({ message: 'Project not found' });
         }
 
-        const reviews = await Review.find({ project: req.params.id }).populate('author project');
+        const reviews = await Review.find({ project: req.params.id }).sort({ upVoteCount: -1 }).populate('author project');
         res.json({ project, reviews });
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving project' });

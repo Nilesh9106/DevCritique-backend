@@ -34,6 +34,35 @@ router.get('/reviews/author/:id', async (req, res) => {
         res.status(500).json({ message: 'Error retrieving reviews' });
     }
 });
+router.post('/reviews/upvote/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        if (!review.upVote.includes(req.body.userId)) {
+            review.upVote.push(req.body.userId);
+            review.upVoteCount++;
+            review.save();
+        }
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving reviews' });
+    }
+});
+router.post('/reviews/downvote/:id', async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id);
+        if (review.upVote.includes(req.body.userId)) {
+            var index = review.upVote.indexOf(req.body.userId);
+            if (index !== -1) {
+                review.upVote.splice(index, 1);
+            }
+            review.upVoteCount--;
+            review.save();
+        }
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving reviews' });
+    }
+});
 
 //add image to review
 router.put('/reviews/image/:id', async (req, res) => {
