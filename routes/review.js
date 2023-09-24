@@ -34,7 +34,7 @@ router.get('/reviews/author/:id', async (req, res) => {
         res.status(500).json({ message: 'Error retrieving reviews' });
     }
 });
-router.post('/reviews/upvote/:id', async (req, res) => {
+router.post('/reviews/upvote/:id', middle, async (req, res) => {
     try {
         const review = await Review.findById(req.params.id);
         if (!review.upVote.includes(req.body.userId)) {
@@ -47,7 +47,7 @@ router.post('/reviews/upvote/:id', async (req, res) => {
         res.status(500).json({ message: 'Error retrieving reviews' });
     }
 });
-router.post('/reviews/downvote/:id', async (req, res) => {
+router.post('/reviews/downvote/:id', middle, async (req, res) => {
     try {
         const review = await Review.findById(req.params.id);
         if (review.upVote.includes(req.body.userId)) {
