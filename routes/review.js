@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { Review, User } = require('../models/model');
+const { Review, User, Project } = require('../models/model');
 const middle = require('../middleware/auth')
 
 // Create a new review
 router.post('/reviews', middle, async (req, res) => {
     try {
+        let project = await Project.findById(req.body.project);
+        if (project.author._id == req.body.author) {
+            return res.status(500).json({ message: 'You cannot review your own project' });
+        }
         var review = await Review.create(req.body);
         review = await review.populate('author project');
         res.status(201).json(review);
@@ -110,6 +114,9 @@ router.get('/reviews/:id', async (req, res) => {
 // Update a review by ID
 router.put('/reviews/:id', middle, async (req, res) => {
     try {
+        if (req.body.status != "solved") {
+            req.body.rating = null;
+        }
         const review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });

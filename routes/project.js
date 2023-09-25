@@ -86,6 +86,36 @@ router.get('/projects/:id', async (req, res) => {
     }
 });
 
+router.post('/projects/like/:id', middle, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project.like.includes(req.body.userId)) {
+            project.like.push(req.body.userId);
+            project.likeCount++;
+            project.save();
+        }
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ message: 'Error Liking Project' });
+    }
+});
+router.post('/projects/dislike/:id', middle, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (project.like.includes(req.body.userId)) {
+            var index = project.like.indexOf(req.body.userId);
+            if (index !== -1) {
+                project.like.splice(index, 1);
+            }
+            project.likeCount--;
+            project.save();
+        }
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ message: 'Error disLiking Project' });
+    }
+});
+
 // Update a project by ID
 router.put('/projects/:id', middle, async (req, res) => {
     try {

@@ -9,6 +9,8 @@ const projectSchema = new mongoose.Schema({
     technologies: [{ type: String, trim: true }],
     ogDetails: { type: Object },
     images: [{ type: String }],
+    like: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    likeCount: { type: Number, default: 0 },
 }, { timestamps: true });
 
 // Define the schema for the Reviews
