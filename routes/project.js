@@ -33,7 +33,7 @@ router.get('/projects', async (req, res) => {
 // Read all projects by author
 router.get('/projects/author/:id', async (req, res) => {
     try {
-        const projects = await Project.find({ author: req.params.id }).populate('author');
+        const projects = await Project.find({ author: req.params.id }).populate('author').sort({ createdAt: 'desc' });
         res.json(projects);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving projects' });
@@ -151,6 +151,10 @@ router.delete('/projects/:id', middle, async (req, res) => {
         }
         await Project.findByIdAndDelete(req.params.id);
         deleteReviews(req.params.id);
+        for (let i = 0; i < project.images.length; i++) {
+            const element = project.images[i];
+            await deleteFile(element);
+        }
         res.json({ message: 'Project deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting project' });
