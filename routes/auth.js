@@ -181,15 +181,12 @@ router.get("/forgot-password/:email", async (req, res) => {
 		const uniqueString = randString() + Date.now();
 		let user = await User.findOne({ email: email });
 		if (!user) {
-			res.status(401).json({ message: "Account not Found!!" });
-		}
-		if (user.validated === false) {
-			res.status(401).json({ message: "Email not verified!!" });
+			return res.status(401).json({ message: "Account not Found!!" });
 		}
 		user.uniqueString = uniqueString;
 		await user.save();
 		await sendResetMail(email, uniqueString);
-		res.status(200).json({ message: "Email sent successfully!!" });
+		return res.status(200).json({ message: "Email sent successfully!!" });
 	} catch (error) {
 		res.status(401).json({ message: error.message });
 	}
@@ -198,15 +195,18 @@ router.get("/forgot-password/:email", async (req, res) => {
 router.get("/is-valid-link/:uniqueString", async (req, res) => {
 	try {
 		const uniqueString = req.params.uniqueString;
+		if(30 > uniqueString.length){
+			return res.status(401).json({ message: "Invalid Link!!" });
+		}
 		const date = uniqueString.slice(30);
 		if (Date.now() - date > 3600000) {
-			res.status(401).json({ message: "Link Expired!!" });
+			return res.status(401).json({ message: "Link Expired!!" });
 		}
 		let user = await User.findOne({ uniqueString: uniqueString });
 		if (!user) {
-			res.status(401).json({ message: "Invalid Link!!" });
+			return res.status(401).json({ message: "Invalid Link!!" });
 		}
-		res.status(200).json({ message: "Valid Link!!" });
+		return res.status(200).json({ message: "Valid Link!!" });
 	} catch (error) {
 		res.status(401).json({ message: error.message });
 	}
@@ -215,20 +215,24 @@ router.get("/is-valid-link/:uniqueString", async (req, res) => {
 router.post("/reset-password", async (req, res) => {
 	try {
 		const { uniqueString, password } = req.body;
+		if(30 > uniqueString.length){
+			return res.status(401).json({ message: "Invalid Link!!" });
+		}
 		const date = uniqueString.slice(30);
 		if (Date.now() - date > 3600000) {
-			res.status(401).json({ message: "Link Expired!!" });
+			return res.status(401).json({ message: "Link Expired!!" });
 		}
 		let user = await User.findOne({ uniqueString: uniqueString });
 		if (!user) {
-			res.status(401).json({ message: "Invalid Link!!" });
+			return res.status(401).json({ message: "Invalid Link!!" });
 		}
 		const saltRounds = 5;
 		bcrypt.hash(password, saltRounds, async (err, hash) => {
 			if (err) throw new Error("Internal Server Error");
 			user.password = hash;
+			user.validated = true;
 			await user.save();
-			res.status(200).json({ message: "Password reset successfully!!" });
+			return res.status(200).json({ message: "Password reset successfully!!" });
 		});
 	} catch (error) {
 		res.status(401).json({ message: error.message });
