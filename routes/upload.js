@@ -31,11 +31,22 @@ upload.post("/file/upload", multer({ storage: multer.diskStorage({}) }).single("
         }
     });
 
+upload.get("/file/delete", async (req, res) => {
+	try {
+		let imageurl = req.query.imageurl;
+		let deleted = await deleteFile(imageurl);
+		res.status(200).json({ success: true, deleted});
+	} catch (err) {
+		res.status(500).json({ success: false, message: err });
+	}
+});
+
 
 async function deleteFile(imageurl) {
     try {
         let public_id = imageurl.split("/").pop().split(".")[0];
         let deleted = await cloudinary.uploader.destroy(public_id);
+		return deleted;
     } catch (err) {
         console.log(err);
     }

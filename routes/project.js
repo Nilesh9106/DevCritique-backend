@@ -88,13 +88,13 @@ router.get('/projects/:id', async (req, res) => {
 
 router.post('/projects/like/:id', middle, async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id);
+        let project = await Project.findById(req.params.id);
         if (!project.like.includes(req.body.userId)) {
             project.like.push(req.body.userId);
             project.likeCount++;
             project.save();
         }
-        res.json(project);
+        res.status(200).json(project);
     } catch (error) {
         res.status(500).json({ message: 'Error Liking Project' });
     }
@@ -119,7 +119,7 @@ router.post('/projects/dislike/:id', middle, async (req, res) => {
 // Update a project by ID
 router.put('/projects/:id', middle, async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id);
+        let project = await Project.findById(req.params.id);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
@@ -131,7 +131,7 @@ router.put('/projects/:id', middle, async (req, res) => {
 
         project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-        res.json(project);
+        res.status(200).json(project);
     } catch (error) {
         res.status(500).json({ message: 'Error updating project' });
     }
