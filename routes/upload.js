@@ -22,7 +22,7 @@ async function handleUpload(file) {
 upload.post("/file/upload", multer({ storage: multer.diskStorage({}) }).single("file"),
     async (req, res) => {
         try {
-            let fileUploaded = await handleUpload(req.file.path, { quality: "auto" });
+            let fileUploaded = await handleUpload(req.file.path, { quality: 30 });
 
             res.status(200).json({ success: true, fileURL: fileUploaded.url });
 

@@ -4,17 +4,6 @@ const { User, Project, Review } = require('../models/model');
 const middle = require('../middleware/auth')
 const { deleteFile } = require('../routes/upload');
 
-
-// Create a new user
-router.post('/users', async (req, res) => {
-    try {
-        const user = await User.create(req.body);
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating user' });
-    }
-});
-
 router.get('/topUsers', async (req, res) => {
     try {
         const users = await User.find().gt("points", 0).sort({ points: -1 }).limit(5).select('-password -uniqueString -validated');
@@ -43,10 +32,18 @@ router.get('/users/:username', async (req, res) => {
 // Update a user by ID
 router.put('/users/:username', middle, async (req, res) => {
     try {
-        const user = await User.findOneAndUpdate({ username: req.params.username }, req.body, { new: true }).select('-password -uniqueString -validated');
+		let oldUser;
+        if(req.body.profilePicture){
+			oldUser = await User.findOne({username:req.params.username});
+		}
+		const user = await User.findOneAndUpdate({ username: req.params.username }, req.body, { new: true }).select('-password -uniqueString -validated');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+		if(oldUser){
+			deleteFile(oldUser.profilePicture);
+		}
+		
         const projects = await Project.find({ author: user._id }).populate('author');
         const reviews = await Review.find({ author: user._id }).populate('author project');
 
@@ -59,9 +56,10 @@ router.put('/users/:username', middle, async (req, res) => {
 // Delete a user by ID
 router.delete('/users/:username', middle, async (req, res) => {
     try {
-        deleteProjectsAndReviews(req.params.username);
-        const user = await User.findOneAndDelete({ username: req.params.username });
+        const user = await User.findOne({ username: req.params.username });
+        deleteProjectsAndReviews(user.id);
         deleteFile(user.profilePicture);
+		user.deleteOne();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -74,11 +72,32 @@ router.delete('/users/:username', middle, async (req, res) => {
 //delete projects and reviews of user
 async function deleteProjectsAndReviews(userId) {
     try {
-        await Project.deleteMany({ author: userId });
-        await Review.deleteMany({ author: userId });
+        let projects = await  Project.find({ author: userId });
+		projects.forEach(async (project)=>{
+			deleteReviews(project.id);
+			project.deleteOne();
+		})
+		let reviews = await Review.find({author: userId});
+		reviews.forEach((review)=>{
+			User.updatePoints(review.author,-review.rating*10);
+			review.deleteOne();
+		})
     }
     catch (error) {
         console.log({ message: error });
+    }
+}
+
+//delete reviews of deleted project
+async function deleteReviews(projectId) {
+    try {
+		let reviews = await Review.find({project: projectId});
+		reviews.forEach((review)=>{
+			User.updatePoints(review.author,-review.rating*10);
+			review.deleteOne();
+		})
+    } catch (error) {
+        console.log(error);
     }
 }
 

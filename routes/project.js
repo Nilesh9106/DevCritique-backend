@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Project, Review } = require('../models/model');
+const { Project, Review, User } = require('../models/model');
 const middle = require('../middleware/auth')
 const { og } = require('../middleware/utils')
 const { deleteFile } = require('../routes/upload');
@@ -31,44 +31,6 @@ router.get('/projects', async (req, res) => {
     }
 });
 // Read all projects by author
-router.get('/projects/author/:id', async (req, res) => {
-    try {
-        const projects = await Project.find({ author: req.params.id }).populate('author');
-        res.json(projects);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving projects' });
-    }
-});
-
-//add image to project
-router.put('/projects/image/:id', async (req, res) => {
-    try {
-        let project = await Project.findById(req.params.id);
-        if (!project) {
-            return res.status(404).json({ message: 'Project not found' });
-        }
-        project.images.push(req.body.imageurl);
-        project = await project.save();
-        res.json(project);
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating project' });
-    }
-});
-
-//delete image from project
-router.delete('/projects/image/:id', async (req, res) => {
-    try {
-        let project = await Project.findById(req.params.id);
-        if (!project) {
-            return res.status(404).json({ message: 'Project not found' });
-        }
-        project.images = project.images.filter(image => image !== req.body.imageurl);
-        project = await project.save();
-        res.json(project);
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating project' });
-    }
-});
 
 // Read a specific project by ID
 router.get('/projects/:id', async (req, res) => {
@@ -160,7 +122,11 @@ router.delete('/projects/:id', middle, async (req, res) => {
 //delete reviews of deleted project
 async function deleteReviews(projectId) {
     try {
-        await Review.deleteMany({ project: projectId });
+		let reviews = await Review.find({project: projectId});
+		reviews.forEach((review)=>{
+			User.updatePoints(review.author,-review.rating*10);
+			review.deleteOne();
+		})
     } catch (error) {
         console.log(error);
     }
