@@ -31,6 +31,44 @@ router.get('/projects', async (req, res) => {
     }
 });
 // Read all projects by author
+router.get('/projects/author/:id', async (req, res) => {
+    try {
+        const projects = await Project.find({ author: req.params.id }).populate('author').sort({ createdAt: 'desc' });
+        res.json(projects);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving projects' });
+    }
+});
+
+//add image to project
+router.put('/projects/image/:id', async (req, res) => {
+    try {
+        let project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        project.images.push(req.body.imageurl);
+        project = await project.save();
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating project' });
+    }
+});
+
+//delete image from project
+router.delete('/projects/image/:id', async (req, res) => {
+    try {
+        let project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        project.images = project.images.filter(image => image !== req.body.imageurl);
+        project = await project.save();
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating project' });
+    }
+});
 
 // Read a specific project by ID
 router.get('/projects/:id', async (req, res) => {
@@ -113,6 +151,10 @@ router.delete('/projects/:id', middle, async (req, res) => {
         }
         await Project.findByIdAndDelete(req.params.id);
         deleteReviews(req.params.id);
+        for (let i = 0; i < project.images.length; i++) {
+            const element = project.images[i];
+            await deleteFile(element);
+        }
         res.json({ message: 'Project deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting project' });

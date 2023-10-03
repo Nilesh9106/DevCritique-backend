@@ -64,28 +64,13 @@ userSchema.static('updatePoints', async function (id, change) {
 	user.points = user.points + change;
 	await user.save();
 })
-userSchema.pre('remove', async function (next) {
-    await Project.deleteMany({ author: this._id });
-    await Review.deleteMany({ author: this._id });
-    next();
-});
-projectSchema.pre('remove', async function (next) {
-    const reviews = await Review.find({ project: this._id });
-    for (const review of reviews) {
-        await review.remove();
-    }
-    next();
-});
 // Create the models based on the schemas
 const Project = mongoose.model('Project', projectSchema);
 const Review = mongoose.model('Review', reviewSchema);
 const User = mongoose.model('User', userSchema);
-// const Comment = mongoose.model('Comment', commentSchema);
 
-// Export the models
 module.exports = {
     Project,
     Review,
     User,
-    // Comment
 };

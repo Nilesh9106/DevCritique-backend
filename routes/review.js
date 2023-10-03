@@ -22,6 +22,25 @@ router.post('/reviews', middle, async (req, res) => {
     }
 });
 
+// Read all reviews
+router.get('/reviews', async (req, res) => {
+    try {
+        const reviews = await Review.find().populate('author project').sort({ createdAt: 'desc' });
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving reviews' });
+    }
+});
+
+//read review by author
+router.get('/reviews/author/:id', async (req, res) => {
+    try {
+        const reviews = await Review.find({ author: req.params.id }).populate('author project').sort({ createdAt: 'desc' });
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving reviews' });
+    }
+});
 router.post('/reviews/upvote/:id', middle, async (req, res) => {
     try {
         const review = await Review.findById(req.params.id);

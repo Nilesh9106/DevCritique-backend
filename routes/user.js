@@ -20,8 +20,8 @@ router.get('/users/:username', async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const projects = await Project.find({ author: user._id }).populate('author');
-        const reviews = await Review.find({ author: user._id }).populate('author project');
+        const projects = await Project.find({ author: user._id }).populate('author').sort({ createdAt: 'desc' });
+        const reviews = await Review.find({ author: user._id }).populate('author project').sort({ createdAt: 'desc' });
 
         res.json({ user, projects, reviews });
     } catch (error) {
@@ -43,10 +43,9 @@ router.put('/users/:username', middle, async (req, res) => {
 		if(oldUser){
 			deleteFile(oldUser.profilePicture);
 		}
-		
-        const projects = await Project.find({ author: user._id }).populate('author');
-        const reviews = await Review.find({ author: user._id }).populate('author project');
-
+	
+        const projects = await Project.find({ author: user._id }).populate('author').sort({ createdAt: 'desc' });
+        const reviews = await Review.find({ author: user._id }).populate('author project').sort({ createdAt: 'desc' });
         res.json({ user, projects, reviews });
     } catch (error) {
         res.status(500).json({ message: 'Error updating user' });
