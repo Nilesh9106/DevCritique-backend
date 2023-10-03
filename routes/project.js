@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Project, Review } = require('../models/model');
+const { Project, Review, User } = require('../models/model');
 const middle = require('../middleware/auth')
 const { og } = require('../middleware/utils')
 const { deleteFile } = require('../routes/upload');
@@ -164,7 +164,11 @@ router.delete('/projects/:id', middle, async (req, res) => {
 //delete reviews of deleted project
 async function deleteReviews(projectId) {
     try {
-        await Review.deleteMany({ project: projectId });
+		let reviews = await Review.find({project: projectId});
+		reviews.forEach((review)=>{
+			User.updatePoints(review.author,-review.rating*10);
+			review.deleteOne();
+		})
     } catch (error) {
         console.log(error);
     }
