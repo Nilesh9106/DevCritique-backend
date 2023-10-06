@@ -107,7 +107,6 @@ const sendMail = async (email, uniqueString) => {
 			pass: process.env.EMAIL_PASSWORD,
 		},
 	});
-	console.log("in mail", process.env.EMAIL_ID);
 	var mailOptions = {
 		from: process.env.EMAIL_ID,
 		to: email,
@@ -168,7 +167,6 @@ const sendMail = async (email, uniqueString) => {
 				console.log(error);
 				reject(error);
 			} else {
-				console.log("Email sent: " + responce.response);
 				resolve("Email sent: " + responce.response);
 			}
 		});
@@ -247,7 +245,6 @@ const sendResetMail = async (email, uniqueString) => {
 			pass: process.env.EMAIL_PASSWORD,
 		},
 	});
-	console.log("in mail", process.env.EMAIL_ID);
 	var mailOptions = {
 		from: process.env.EMAIL_ID,
 		to: email,
@@ -308,7 +305,6 @@ const sendResetMail = async (email, uniqueString) => {
 				console.log(error);
 				reject(error);
 			} else {
-				console.log("Email sent: " + responce.response);
 				resolve("Email sent: " + responce.response);
 			}
 		});
