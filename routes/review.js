@@ -113,7 +113,6 @@ const sendReviewMail = async (email, projectId, review) => {
 			pass: process.env.EMAIL_PASSWORD,
 		},
 	});
-	console.log("in mail", process.env.EMAIL_ID);
 	var mailOptions = {
 		from: process.env.EMAIL_ID,
 		to: email,
@@ -186,7 +185,6 @@ const sendReviewMail = async (email, projectId, review) => {
 				console.log(error);
 				reject(error);
 			} else {
-				console.log("Email sent: " + responce.response);
 				resolve("Email sent: " + responce.response);
 			}
 		});
